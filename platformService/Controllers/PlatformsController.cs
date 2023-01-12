@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using platformService.Data;
 using platformService.Dtos;
+using platformService.Models;
 
 namespace platformService.Controllers
 {
@@ -36,9 +37,25 @@ namespace platformService.Controllers
                 return Ok(_mapper.Map<PlatformReadDto>(platformItems));
             }
             return NotFound();
-
         }
 
+
+        [HttpPost]
+        public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto platformCreateDto)
+        {
+             Console.WriteLine("---> Creating platform");
+
+            var platformModel = _mapper.Map<Platform>(platformCreateDto);
+             _repository.CreatePlatform(platformModel);
+            _repository.SaveChanges();
+          
+            if (platformModel != null)
+            {
+                var platform = _mapper.Map<PlatformReadDto>(platformModel);
+                return CreatedAtRoute(nameof(GetPlatformById), new { Id = platform.Id}, platform );
+            }
+            return NotFound();
+        }
     }
 
 }
