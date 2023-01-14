@@ -34,13 +34,26 @@ spec:
       protocol: TCP
       port: 15672
       targetPort: 15672
-   -  name: rbmq-msg-port
+    - name: rbmq-msg-port
       protocol: TCP
       port: 5672
       targetPort: 5672
 
-      ## TODO: leaving this part incomplete , need to have a load balance service defined. 
-
-      https://www.youtube.com/watch?v=DgVjEo3OGBI
-
-
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: rabbitmq
+  ports:
+    - name: rbmq-mgmt-port
+      protocol: TCP
+      port: 15672
+      targetPort: 15672
+    - name: rbmq-msg-port
+      protocol: TCP
+      port: 5672
+      targetPort: 5672
