@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using platformService.AsyncDataServices;
 using platformService.Data;
 using platformService.Dtos;
 using platformService.Models;
@@ -12,11 +13,13 @@ namespace platformService.Controllers
     {
         private readonly IPlatformRepo _repository;
         private readonly IMapper _mapper;
+        private readonly IMessageBusClient _messageBusClient;
 
-        public PlatformsController(IPlatformRepo repository, IMapper mapper)
+        public PlatformsController(IPlatformRepo repository, IMapper mapper, IMessageBusClient messageBusClient)
         {
             _repository = repository;
             _mapper = mapper;
+            _messageBusClient = messageBusClient;
         }
         [HttpGet]
         public ActionResult<IEnumerable<PlatformReadDto>> GetPlatforms()
