@@ -14,8 +14,9 @@ namespace platformService.Controllers
         private readonly IPlatformRepo _repository;
         private readonly IMapper _mapper;
         private readonly IMessageBusClient _messageBusClient;
+        private readonly IMessageBusClient _commandDataClient;
 
-        public PlatformsController(IPlatformRepo repository, IMapper mapper, IMessageBusClient messageBusClient)
+        public PlatformsController(IPlatformRepo repository, IMapper mapper,  IMessageBusClient messageBusClient)
         {
             _repository = repository;
             _mapper = mapper;
@@ -44,20 +45,31 @@ namespace platformService.Controllers
 
 
         [HttpPost]
-        public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto platformCreateDto)
+        public async Task<ActionResult<PlatformReadDto>> CreatePlatform(PlatformCreateDto platformCreateDto)
         {
-             Console.WriteLine("---> Creating platform");
+            Console.WriteLine("---> Creating platform");
 
             var platformModel = _mapper.Map<Platform>(platformCreateDto);
-             _repository.CreatePlatform(platformModel);
+            _repository.CreatePlatform(platformModel);
             _repository.SaveChanges();
-          
-            if (platformModel != null)
+            var platformReadDto = _mapper.Map<PlatformReadDto>(platformModel);
+
+            var platform = _mapper.Map<PlatformReadDto>(platformModel);
+            //send async msg
+
+            try
             {
-                var platform = _mapper.Map<PlatformReadDto>(platformModel);
-                return CreatedAtRoute(nameof(GetPlatformById), new { Id = platform.Id}, platform );
+                var platformPublishedDto = _mapper.Map<PlatformPublishedDto>(platformReadDto);
+                platformPublishedDto.Event = "platform_published";
+                _messageBusClient.PublishNewPlatform(platformPublishedDto);
             }
-            return NotFound();
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("---> exception for sending async msg");
+            }
+
+            return CreatedAtRoute(nameof(GetPlatformById), new { Id = platform.Id }, platform);
         }
     }
 

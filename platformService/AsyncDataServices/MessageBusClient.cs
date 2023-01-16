@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using platformService.AsyncDataServices;
 using platformService.Dtos;
 using RabbitMQ.Client;
 
@@ -37,7 +36,7 @@ namespace platformService.AsyncDataServices
             }
         }
 
-        public void PublishNewPlatform(PlatformPublishDto platformPublishDto)
+        public void PublishNewPlatform(PlatformPublishedDto platformPublishDto)
         {
             var message = JsonSerializer.Serialize(platformPublishDto);
 
